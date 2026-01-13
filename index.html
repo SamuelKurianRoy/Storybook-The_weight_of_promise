@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Weight of the Promise – Flipbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #020617;
+      --page-bg: #fdfbf7;
+      --page-text: #111827;
+      --accent: #f59e0b;
+      --accent-dark: #b45309;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 40%, #020617 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 8px;
+      color: #e5e7eb;
+    }
+
+    .scene {
+      width: min(960px, 100%);
+      max-width: 960px;
+      perspective: 1600px;
+    }
+
+    .book-shell {
+      background: rgba(15,23,42,0.98);
+      border-radius: 20px;
+      border: 1px solid rgba(148,163,184,0.3);
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 50px rgba(15,23,42,0.9);
+    }
+
+    .book-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .book-title {
+      font-size: clamp(20px, 2vw, 24px);
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .book-sub {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #cbd5f5;
+    }
+
+    .book {
+      position: relative;
+      margin-top: 8px;
+      height: min(540px, 70vh);
+      transform-style: preserve-3d;
+    }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      margin-inline: auto;
+      width: 100%;
+      max-width: 900px;
+      background: var(--page-bg);
+      color: var(--page-text);
+      border-radius: 18px;
+      box-shadow:
+        0 18px 45px rgba(15,23,42,0.85),
+        inset 12px 0 18px rgba(0,0,0,0.08);
+      padding: 0;
+      overflow: hidden;
+      transform-origin: left center;
+      backface-visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .page-spread {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      padding: 40px 50px;
+      overflow-y: auto;
+    }
+
+    .page-spread::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(253, 251, 247, 0.3);
+      z-index: 0;
+    }
+
+    .page-spread > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-left {
+      display: none;
+    }
+
+    .page-right {
+      display: contents;
+    }
+
+    .cover-right {
+      background-image: url('Images/Writing_Cover.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .cover-right::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(253, 251, 247, 0.75);
+      z-index: 0;
+    }
+
+    .cover-right > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-spread:has(.no-image) {
+      justify-content: center;
+    }
+
+    .page-right.no-image {
+      flex: 0 1 100%;
+      max-width: 100%;
+      padding-left: 30px;
+      padding-right: 30px;
+    }
+
+    .page h2 {
+      font-size: 18px;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    .page h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .page p {
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 10px;
+      color: #1f2933;
+    }
+
+    .page p:last-child { margin-bottom: 0; }
+
+    .page .small {
+      font-size: 12px;
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    .page .highlight {
+      color: #b45309;
+      font-weight: 600;
+    }
+
+    .page-image {
+      display: none;
+    }
+
+    .page-spread[data-bg="1"] { background-image: url('Images/1.png'); }
+    .page-spread[data-bg="2"] { background-image: url('Images/2.png'); }
+    .page-spread[data-bg="3"] { background-image: url('Images/3.png'); }
+    .page-spread[data-bg="4"] { background-image: url('Images/4.png'); }
+    .page-spread[data-bg="5"] { background-image: url('Images/5.png'); }
+    .page-spread[data-bg="6"] { background-image: url('Images/6.png'); }
+    .page-spread[data-bg="7"] { background-image: url('Images/7.png'); }
+    .page-spread[data-bg="8"] { background-image: url('Images/8.png'); }
+    .page-spread[data-bg="9"] { background-image: url('Images/9.png'); }
+    .page-spread[data-bg="10"] { background-image: url('Images/10.png'); }
+    .page-spread[data-bg="11"] { background-image: url('Images/11.png'); }
+    .page-spread[data-bg="12"] { background-image: url('Images/12.png'); }
+    .page-spread[data-bg="13"] { background-image: url('Images/13.png'); }
+    .page-spread[data-bg="14"] { background-image: url('Images/14.png'); }
+    .page-spread[data-bg="15"] { background-image: url('Images/15.png'); }
+    .page-spread[data-bg="16"] { background-image: url('Images/16.png'); }
+    .page-spread[data-bg="cover"] { background-image: url('Images/Cover.png'); }
+
+    .page.cover-page {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      padding: 0;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .cover-spread {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cover-left {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background: var(--page-bg);
+      overflow: hidden;
+    }
+
+    .cover-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 30px;
+      text-align: center;
+      background: var(--page-bg);
+      position: relative;
+    }
+
+    .cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+    }
+
+    .cover-title {
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+
+    .cover-author {
+      font-size: 18px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .cover-sdg {
+      font-size: 14px;
+      color: #9ca3af;
+      font-style: italic;
+      margin-top: 16px;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        flex-direction: column;
+      }
+      .page-left {
+        flex: 0 0 50%;
+        border-right: none;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+      }
+      .page-right {
+        flex: 0 0 50%;
+      }
+      .page.cover-page {
+        flex-direction: column;
+      }
+      .cover-left {
+        flex: 0 0 50%;
+        border-right: none;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+      }
+      .cover-right {
+        flex: 0 0 50%;
+      }
+    }
+
+    .page-number {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    .page.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    .page.page-enter {
+      animation: pageEnter 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      z-index: 3;
+    }
+
+    .page.page-exit {
+      animation: pageExit 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      z-index: 1;
+    }
+
+    @keyframes pageEnter {
+      0% {
+        opacity: 0;
+        transform: translateX(50px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+    }
+
+    @keyframes pageExit {
+      0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50px) scale(0.95);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 18px 16px 16px; }
+      .page p { font-size: 13px; }
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.96);
+      color: #e5e7eb;
+      font-size: 11px;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    button.primary {
+      border-color: rgba(245,158,11,0.9);
+      background: radial-gradient(circle at top left, rgba(245,158,11,0.3), rgba(15,23,42,1));
+      color: #fefce8;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button:not(:disabled):hover {
+      transform: translateY(-0.5px);
+      box-shadow: 0 10px 26px rgba(15,23,42,0.9);
+      border-color: rgba(148,163,184,0.9);
+    }
+
+    button.primary:not(:disabled):hover {
+      border-color: var(--accent-dark);
+      background: radial-gradient(circle at top left, rgba(245,158,11,0.42), rgba(15,23,42,1));
+    }
+
+    .page-indicator {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="book-shell">
+      <header class="book-header">
+        <div>
+          <div class="book-title">The Weight of the Promise</div>
+        </div>
+        <div class="badge">Flipbook</div>
+      </header>
+
+      <div class="book" id="book">
+        <!-- COVER PAGE -->
+        <section class="page cover-page active">
+          <div class="cover-spread">
+            <div class="cover-left">
+              <img src="Images/Cover.png" alt="Cover" class="cover-image" />
+            </div>
+        </section>
+
+        <!-- PAGE 1 -->
+        <section class="page">
+          <div class="page-spread" data-bg="1">
+            <h2>The House of Cedar and Silk</h2>
+              <p>
+                Imagine a house built of polished cedar and raw silk, a sanctuary filled with the collected treasures of a lifetime. Now,
+                imagine it engulfed in a roar of orange light, the air turning thick and bitter with the acrid sting of smoke.
+              </p>
+              <p>
+                Inside lives a family of immense wealth. Their halls are lined with gold; their shelves are crowded with the sleek, glowing
+                glass of the finest electronics. But as the structural beams begin to groan and the heat becomes an invisible wall, the father
+                does not reach for his gold. He does not scramble for his ledgers or his riches.
+              </p>
+              <p>
+                Through the suffocating grey, he reaches for the only thing that cannot be replaced: his child. He searches only for that
+                small, panicked heartbeat. For in the face of total loss, the gold becomes mere metal, and we realize that a single life is
+                the only thing of true value.
+              </p>
+            <div class="page-number">1</div>
+        </section>
+
+        <!-- PAGE 2 -->
+        <section class="page">
+          <div class="page-spread" data-bg="2">              <h2>The Miracle of Isaac</h2>
+              <p>
+                We understand this instinctually. Wealth is a tool, but a child is a soul; gold is a possession, but a son is a future. To lose one's riches is a tragedy, but to lose one's child is a shattering of the self.
+              </p>
+              <p>
+                Yet, if a child is precious to a father who has everything, how much more precious was the boy born to a man who had nothing but a promise? History tells of a man named Abraham. He did not just wait years for a son; he waited a lifetime. When the nursery finally filled with breath, Abraham was a hundred years old—a man standing in the winter of his life, cradling a miracle that should have been impossible. To Abraham, Isaac was more than a son; he was the laughter that broke a century of longing, the single spark of hope in a desert of old age.
+              </p>
+              <div class="page-number">2</div>
+            </div>
+        </section>
+
+        <!-- PAGE 3 -->
+        <section class="page">
+          <div class="page-spread" data-bg="3">              <h2>The Altar of Faith</h2>
+              <p>
+                Abraham was a man of vast estates and countless livestock—a prince of the desert whose wealth was whispered about in distant lands. Had the Voice asked for half his cattle or all of his silver, Abraham would have surrendered it without a second thought. But at the height of his joy, he learned that faith is not a comfortable seat; it is an altar. One night, the Voice that had promised life asked for a surrender that felt like death. The command was sharp, slicing through the stillness of the desert: "Take your son, your only son Isaac, whom you love, and go to the region of Moriah. Sacrifice him there as a burnt offering." The world must have tilted for Abraham. To give up the wealth of the world is a trifle, but to give up the one for whom you waited a lifetime is to offer up your very soul.
+              </p>
+              <div class="page-number">3</div>
+            </div>
+        </section>
+
+        <!-- PAGE 4 -->
+        <section class="page">
+          <div class="page-spread" data-bg="4">              <h2>The Storm and the Anchor</h2>
+              <p>
+                The psychological weight of those words was a mountain higher than Moriah itself. Abraham had spent a century wandering, holding onto a single promise: that he would be the father of nations. Isaac was the physical embodiment of that miracle. After a hundred years of waiting—a century of silence followed by one perfect miracle—how could the Giver of Life ask for its end?
+              </p>
+              <p>
+                To sacrifice Isaac was not just to lose a son; it was to extinguish the light of his own faith and the future of his entire lineage. Abraham's heart became a storm of grief, a sea of "whys" that had no answers. Yet, as the stars looked down on the silent tents, the father began to pack. Beneath the tempest of his mind, his spirit remained anchored in a terrifyingly quiet resolve. He had spent a lifetime learning to trust the Giver; now, he would have to trust Him even in the face of the fire.
+              </p>
+              <div class="page-number">4</div>
+            </div>
+        </section>
+
+        <!-- PAGE 5 -->
+        <section class="page">
+          <div class="page-spread" data-bg="5">              <h2>The Three-Day Silence</h2>
+              <p>
+                As the sun rose on the first morning, Abraham did not argue. He did not bargain with the heavens or plead for a reprieve.
+                With a heavy, steady hand, he saddled his donkey and split the wood for the fire himself. Each strike of the axe must have
+                echoed like a heartbeat in the crisp morning air—a rhythmic reminder that he was not giving up a portion of his wealth, but
+                laying down the very promise he had lived for. To the world, it looked like madness; to Abraham, it was the ultimate geometry
+                of trust.
+              </p>
+              <p>
+                The journey to Mount Moriah lasted three long days. In the history of the world, there have been few miles walked with such
+                crushing weight. Every step was a rhythmic heartbeat of grief, yet Abraham did not look at the horizon; he looked at the boy
+                walking beside him.
+              </p>
+              <p>
+                He watched the sun catch the gold in Isaac's hair. He listened to the steady sound of his son's voice, a sound that had been
+                his greatest joy and was now his deepest ache. As they walked, the father felt the crushing pressure of a devotion that demanded
+                everything. It was a walk between two worlds: the world of fatherly love and the world of absolute surrender.
+              </p>
+              <p>
+                On the third day, Abraham lifted his eyes and saw the place in the distance. He stopped at the base of the mountain, leaving
+                his servants behind. He placed the wood for the burnt offering onto the shoulders of his son, while he himself carried the
+                fire and the knife. Together, the two of them walked on. Abraham was a man caught in the narrow space between the Love of the
+                Gift and the Love of the Giver—knowing that on top of this mountain, those two loves were about to collide.
+              </p>
+              <div class="page-number">5</div>
+            </div>
+        </section>
+
+        <!-- PAGE 6 -->
+        <section class="page">
+          <div class="page-spread" data-bg="6">              <h2>The Golden Chains</h2>
+              <p>
+                Centuries later, under the heat of a different sun, another man stood before the Divine. He was a young ruler, draped in the
+                finest linens and carrying the invisible weight of his own success. He had followed every law and kept every commandment since
+                his youth, yet his soul felt hollow. He knelt before Jesus and asked the question that echoed Abraham's journey:
+                <span class="highlight">"What must I do to inherit eternal life?"</span>
+              </p>
+              <p>
+                When Jesus looked at him, the scriptures say He loved him. In that gaze, Jesus saw the man's "Isaac." It was not a child of
+                flesh and blood, but a mountain of gold—a lifetime of security, status, and pride. To set the man free, Jesus spoke a command
+                as sharp as the knife on Moriah:
+              </p>
+              <p class="highlight">
+                "Go, sell everything you have and give to the poor, and you will have treasure in heaven. Then come, follow me."
+              </p>
+              <p>
+                The world tilted for the young ruler, just as it had for Abraham. But where Abraham had risen early in the morning to face the
+                mountain, this man stood frozen. His heart was tethered to the earth by golden chains. He could not do what the Father of Faith
+                had done. He could not place his "Isaac" on the altar.
+              </p>
+              <p>
+                He represents the tragedy of the held-fast hand. He could not grasp the hand of Christ because his own hands were already full
+                of things that would eventually turn to dust. He loved the gift more than the Giver; he loved the treasure more than the
+                Treasure-Giver.
+              </p>
+              <p>
+                The young man did not argue, but he did not obey. He simply turned away. He walked back to his vast estates in deep sorrow,
+                his head bowed, bound by the very things he thought he owned. He kept his gold, but in doing so, he lost the Future.
+              </p>
+              <div class="page-number">6</div>
+            </div>
+        </section>
+
+        <!-- PAGE 7 -->
+        <section class="page">
+          <div class="page-spread" data-bg="7">              <h2>The Ascent of Moriah</h2>
+              <p>
+                As they climbed the slopes of Moriah, Isaac carried the wood for the fire, his young shoulders bearing the very instrument of
+                his end. The silence of the mountain was broken only by the boy's steady voice. "Father," he asked, "we have the fire and the
+                wood, but where is the lamb for the burnt offering?"
+              </p>
+              <p>
+                Abraham's heart must have shattered into a thousand pieces at the sound of the word 'lamb.' He looked into his son's eyes—the
+                laughter of his old age, the miracle of his century of waiting—and his voice did not crack, though his heart was breaking. He
+                spoke the prophetic truth that would echo through history:
+                <span class="highlight">"God Himself will provide the lamb, my son."</span>
+              </p>
+              <p>
+                In that moment, Abraham spoke a prophecy he did not yet fully understand. He was looking at his son, but his words were looking
+                forward to a different hill and a different sacrifice.
+              </p>
+              <div class="page-number">7</div>
+            </div>
+        </section>
+
+        <!-- PAGE 8 -->
+        <section class="page">
+          <div class="page-spread" data-bg="8">              <h2>The Altar of Silence</h2>
+              <p>
+                At the summit of Moriah, the silence was broken only by the hollow sound of stones being piled one upon another. Abraham built
+                the altar with trembling hands, each rock a weight upon his soul. This was the ultimate version of the burning house: Abraham was
+                not saving his child from the flames; he was placing him upon the wood.
+              </p>
+              <p>
+                When the time came, Isaac did not fight. In a display of trust that matched his father's, he allowed himself to be bound. The
+                knife was raised, glinting in the harsh sun—a silver line between the promise of the past and the obedience of the present.
+                Abraham had reached the absolute end of himself, choosing the Giver over the gift, proving that his love for God was deeper
+                than his love for his own legacy.
+              </p>
+              <div class="page-number">8</div>
+            </div>
+        </section>
+
+        <!-- PAGE 9 -->
+        <section class="page">
+          <div class="page-spread" data-bg="9">              <h2>The Provision in the Thorns</h2>
+              <p>
+                "Abraham! Abraham!" The Voice returned, sharp and sudden, staying his hand in mid-air.
+                <span class="highlight">"Do not lay a hand on the boy,"</span>
+                the Angel of the Lord commanded.
+                <span class="highlight">"Now I know that you fear God."</span>
+              </p>
+              <p>
+                Abraham looked up, his vision blurred by tears, and heard a rustle in the nearby brush. There, caught by its horns in a thicket
+                of thorns, was a ram. God did not want Isaac's blood; He wanted Abraham's heart. Abraham untied his boy, his chest heaving with
+                a joy the world could never touch. He took the ram and offered it up, a life for a life, naming that place
+                <span class="highlight">Jehovah-Jireh</span>—The Lord Will Provide. In that moment, the mountain of testing became the mountain
+                of seeing.
+              </p>
+              <div class="page-number">9</div>
+            </div>
+        </section>
+
+        <!-- PAGE 10 -->
+        <section class="page">
+          <div class="page-spread" data-bg="10">              <h2>The Shadow and the Light</h2>
+              <p>
+                The ram caught in the thicket of Moriah was a shadow of a greater Light to come. As Isaac carried the wood up the hill, his
+                young shoulders bore the weight of what another Son would one day carry: a wooden cross. Just as the ram's head was caught in
+                the thorns of Moriah, so too would the King of Kings wear a crown of brambles on that same horizon.
+              </p>
+              <p>
+                This was the promise of the Substitute. Centuries later, on a nearby hill called Golgotha, another Father carried wood for a
+                sacrifice. But this time, there was no voice to stay the hand. God the Father did not ask of Abraham anything He was not willing
+                to do Himself. He took the "Isaac" of His own heart—His only Son, whom He loved—and placed Him upon the wood. Jesus became
+                the Lamb that the thicket of Moriah had only whispered about. He died on a tree to kill death's ancient sting—the ultimate Lamb
+                that the Father was willing to bring.
+              </p>
+              <p class="verse" style="font-style: italic; margin-top: 12px; line-height: 1.8;">
+                From the wood of the first tree, a debt was sown,<br />
+                In a garden of shadows, we wandered alone.<br />
+                But the Ram in the thicket, with thorns 'round His brow,<br />
+                Paid the price of the forest, then and for now.
+              </p>
+              <div class="page-number">10</div>
+            </div>
+        </section>
+        <!-- PAGE 11 -->
+        <section class="page">
+          <div class="page-spread" data-bg="11">              <h2>The Bridge of Two Trees</h2>
+              <p>
+                There is a poetic bridge between two trees that spans the history of the world. In the Garden of Eden, humanity stood before
+                the first tree and reached out to take what was not theirs, trying to become like gods. In that moment of reaching, we lost
+                our way, and the "house fire" of our own making began to burn.
+              </p>
+              <p>
+                But centuries later, on the hill of the Cross, God reached out from a second tree to become like us. The wood Isaac carried up
+                Moriah was the same wood that foreshadowed the instrument of the world's redemption. It was the ultimate sacrifice: where the
+                first tree led to death, the tree of the Cross led to life.
+              </p>
+              <p>
+                In the smoke and heat of our fallen world, God did not reach for gold or ledgers. He did not scramble for the treasures of the
+                universe. Instead, He reached through the suffocating grey for the only thing that cannot be replaced: His children. Just as
+                the father in the cedar house reached for his child, God the Father gave up His only Son to pull us back into the light.
+              </p>
+              <p>
+                He took the "Isaac" of His own heart and placed Him upon the wood, proving once and for all that in the face of total loss, a
+                soul is the only thing of true value. Through the smoke of Moriah and the shadows of the Cross, we are brought home.
+              </p>
+              <div class="page-number">11</div>
+            </div>
+        </section>
+
+        <!-- PAGE 12 -->
+        <section class="page">
+          <div class="page-spread" data-bg="12">              <h2>The Modern Altar</h2>
+              <p>
+                Now, we must look away from the smoke of Moriah and into the mirrors of our own lives. We all have an "Isaac"—something so
+                precious that the thought of losing it makes the heart tremble. Today, that Isaac is often built of glass and gold. It might
+                be the glowing screen in your palm that consumes your hours, the status you have built like a tower, or a career forged through
+                years of sweat and ambition. For some, it is even a relationship that has become an idol—a person we have come to love more
+                than the One who created them.
+              </p>
+              <p>
+                We hold these things with white-knuckled intensity, fearing that if we let go, we will have nothing left. We find ourselves more
+                like the young ruler, clutching our treasures while the path to the mountain waits, forgetting that we are only tethered to
+                things that will eventually turn to dust.
+              </p>
+              <div class="page-number">12</div>
+            </div>
+        </section>
+
+        <!-- PAGE 13 -->
+        <section class="page">
+          <div class="page-spread" data-bg="13">              <h2>The Geometry of Surrender</h2>
+              <p>
+                The question remains: If the Giver asked for the gift back, could you lay it on the altar? True faith is not found in the things
+                we accumulate, but in the "ultimate geometry" of our willingness to open our hands. The story of Abraham reminds us of a terrifying
+                but beautiful truth: we only truly possess what we are willing to surrender to God.
+              </p>
+              <p>
+                When we surrender our "Isaac," we find that God is not a taker of joy, but a multiplier of it. He did not ask for the sacrifice
+                because He wanted to take, but because He wanted to provide something eternal. Only when our hands are empty of the world can
+                they be truly filled with the Divine. For when we let go, we find that His hands are already holding everything we need.
+              </p>
+              <div class="page-number">13</div>
+            </div>
+        </section>
+
+        <!-- PAGE 14 -->
+        <section class="page">
+          <div class="page-spread" data-bg="14">              <h2>Held by the Father</h2>
+              <p>
+                God's love is not a soft sentiment; it is a mountain-climbing, sacrifice-providing, substitute-sending fire. He did not spare
+                His own Son, the ultimate Isaac, so that we might never have to walk the mountain alone. Whether we face the loss of a dream
+                or the surrender of our modern idols, we find that the heart that surrenders is the heart that is truly free.
+              </p>
+              <p>
+                We are invited to trust the Father who provided the Ram, the Son who became the Lamb, and the Spirit who gives us the courage
+                to walk up our own mountains. In the end, the greatest treasure is not what we hold, but the One who holds us. Through the
+                smoke of our trials and the silence of our surrenders, we realize that when we finally let go, we are—for the first time—truly held.
+              </p>
+              <p class="small" style="margin-top: 20px;">
+                This storybook was created by Samuel Kurian Roy. S.D.G.
+              </p>
+              <div class="page-number">14</div>
+            </div>
+        </section>
+
+        <!-- PAGE 15 -->
+        <section class="page">
+          <div class="page-spread" data-bg="15">              <h2>Biblical References</h2>
+              <p><span class="highlight">The Trial of Abraham and the Sacrifice of Isaac:</span><br />
+                Genesis 22:1–19
+              </p>
+              <p><span class="highlight">The Birth of Isaac (Abraham at 100, Sarah at 90):</span><br />
+                Genesis 17:17, Genesis 21:1–5
+              </p>
+              <p><span class="highlight">The Rich Young Ruler:</span><br />
+                Matthew 19:16–30, Mark 10:17–31, Luke 18:18–30
+              </p>
+              <p><span class="highlight">Abraham's Riches:</span><br />
+                Genesis 13:2
+              </p>
+              <p><span class="highlight">The Two Trees (Adam vs. Christ):</span><br />
+                Romans 5:12–21
+              </p>
+              <p><span class="highlight">The Lamb of God:</span><br />
+                John 1:29
+              </p>
+              <p class="small" style="margin-top: 16px;">
+                These passages undergird the themes of promise, sacrifice, surrender, and substitution explored in
+                <span class="highlight">"The Weight of the Promise."</span>
+              </p>
+              <div class="page-number">15</div>
+            </div>
+        </section>
+
+        <!-- PAGE 16 -->
+        <section class="page">
+          <div class="page-spread" data-bg="16">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%;">
+              <p style="font-size: 16px; color: #1f2933; margin-bottom: 12px;">
+                This storybook was created by Samuel Kurian Roy.
+              </p>
+              <p style="font-size: 14px; color: #6b7280; letter-spacing: 0.1em;">
+                S.D.G.
+              </p>
+              <div class="page-number" style="position: absolute; bottom: 20px; right: 30px;">16</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="controls">
+        <div class="page-indicator" id="pageIndicator">Cover</div>
+        <div class="btn-group">
+          <button id="prevBtn">
+            ‹ Prev
+          </button>
+          <button id="nextBtn" class="primary">
+            Next ›
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const pages = Array.from(document.querySelectorAll('.page'));
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const indicator = document.getElementById('pageIndicator');
+      let current = 0;
+
+      function updateIndicator() {
+        if (current === 0) {
+          indicator.textContent = "Cover";
+        } else {
+          indicator.textContent = "Page " + current + " of " + (pages.length - 1);
+        }
+      }
+
+      let isAnimating = false;
+
+      function showPage(index, direction = 1) {
+        if (index === current || index < 0 || index >= pages.length || isAnimating) return;
+
+        isAnimating = true;
+        const currentPage = pages[current];
+        const nextPage = pages[index];
+
+        // Start exit animation for current page
+        currentPage.classList.add('page-exit');
+        
+        // Start enter animation for next page
+        nextPage.classList.add('page-enter');
+
+        // Handle animation completion
+        const handleAnimationEnd = () => {
+          currentPage.classList.remove('active', 'page-exit');
+          nextPage.classList.remove('page-enter');
+          nextPage.classList.add('active');
+          
+          current = index;
+          updateIndicator();
+          prevBtn.disabled = current === 0;
+          nextBtn.disabled = current === pages.length - 1;
+          isAnimating = false;
+          
+          nextPage.removeEventListener('animationend', handleAnimationEnd);
+        };
+
+        nextPage.addEventListener('animationend', handleAnimationEnd);
+      }
+
+      prevBtn.addEventListener('click', () => showPage(current - 1, -1));
+      nextBtn.addEventListener('click', () => showPage(current + 1, 1));
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') showPage(current + 1, 1);
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') showPage(current - 1, -1);
+        if (e.key === 'Home') showPage(0, -1);
+        if (e.key === 'End') showPage(pages.length - 1, 1);
+      });
+
+      // Touch/Swipe support for mobile
+      let touchStartX = 0;
+      let touchEndX = 0;
+      const book = document.getElementById('book');
+      
+      book.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      
+      book.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const swipeThreshold = 50;
+        if (touchEndX < touchStartX - swipeThreshold) {
+          showPage(current + 1, 1);
+        }
+        if (touchEndX > touchStartX + swipeThreshold) {
+          showPage(current - 1, -1);
+        }
+      }, { passive: true });
+
+      updateIndicator();
+      prevBtn.disabled = true;
+    })();
+  </script>
+</body>
+</html>
