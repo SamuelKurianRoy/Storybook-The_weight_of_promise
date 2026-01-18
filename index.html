@@ -223,29 +223,23 @@
     .page-spread[data-bg="cover"] { background-image: url('Images/Cover.png'); }
 
     .page.cover-page {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
       padding: 0;
-      gap: 0;
       overflow: hidden;
     }
 
     .cover-spread {
-      display: flex;
       width: 100%;
       height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-image: url('Images/Cover.png');
     }
 
     .cover-left {
       width: 100%;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      background: var(--page-bg);
-      overflow: hidden;
+      display: none;
     }
 
     .cover-right {
@@ -265,6 +259,7 @@
       height: 100%;
       object-fit: cover;
       border-radius: 0;
+      display: none;
     }
 
     .cover-title {
@@ -301,17 +296,6 @@
         border-bottom: 2px solid rgba(0, 0, 0, 0.08);
       }
       .page-right {
-        flex: 0 0 50%;
-      }
-      .page.cover-page {
-        flex-direction: column;
-      }
-      .cover-left {
-        flex: 0 0 50%;
-        border-right: none;
-        border-bottom: 2px solid rgba(0, 0, 0, 0.08);
-      }
-      .cover-right {
         flex: 0 0 50%;
       }
     }
@@ -769,6 +753,14 @@
               <p style="font-size: 14px; color: #6b7280; letter-spacing: 0.1em;">
                 S.D.G.
               </p>
+              <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.1);">
+                <p style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+                  For inquiries or feedback:
+                </p>
+                <a href="mailto:storybookssdg@gmail.com" style="font-size: 14px; color: #f59e0b; text-decoration: none; font-weight: 500;">
+                  storybookssdg@gmail.com
+                </a>
+              </div>
               <div class="page-number" style="position: absolute; bottom: 20px; right: 30px;">16</div>
             </div>
           </div>
